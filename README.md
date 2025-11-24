@@ -19,5 +19,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 crear en local .env dentro colocar:
+
 VITE_SUPABASE_URL=...
+
 VITE_SUPABASE_ANON_KEY=...
