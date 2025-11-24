@@ -20,6 +20,7 @@ export default function Dashboard() {
   // Datos para gráficos
   const [reportsByType, setReportsByType] = useState([]);
   const [recentReports, setRecentReports] = useState([]);
+  const [allReports, setAllReports] = useState([]);
 
   useEffect(() => {
     loadDashboard();
@@ -48,6 +49,8 @@ export default function Dashboard() {
 
       // 4️⃣ Gráfico: reportes por tipo
       const { data: reports } = await supabase.from("reports").select("*");
+
+      setAllReports(reports || []);
 
       const grouped = Object.values(
         reports.reduce((acc, r) => {
@@ -81,6 +84,35 @@ export default function Dashboard() {
   return (
     <div style={{ padding: 30, fontFamily: "sans-serif" }}>
       <h1 style={{ fontSize: 32, marginBottom: 20 }}>Dashboard - Tombo</h1>
+
+      {/* Información de API consumida */}
+      <div
+        style={{
+          background: "#f0f4f8",
+          padding: 15,
+          borderRadius: 8,
+          marginBottom: 20,
+          border: "1px solid #d0d7de"
+        }}
+      >
+        <h3 style={{ margin: "0 0 10px 0", fontSize: 16 }}>API Information - Supabase</h3>
+        <div style={{ fontSize: 14, color: "#444" }}>
+          <p style={{ margin: "5px 0" }}>
+            <strong>Tablas consumidas:</strong> reports, comments, points
+          </p>
+          <p style={{ margin: "5px 0" }}>
+            <strong>Consultas realizadas:</strong>
+          </p>
+          <ul style={{ margin: "5px 0 5px 20px", padding: 0 }}>
+            <li>COUNT en reports, comments, points (totales)</li>
+            <li>SELECT * en reports (datos para gráfico)</li>
+            <li>SELECT con ORDER BY y LIMIT en reports (últimos 5)</li>
+          </ul>
+          <p style={{ margin: "5px 0" }}>
+            <strong>Endpoint:</strong> {import.meta.env.VITE_SUPABASE_URL || "No configurado"}
+          </p>
+        </div>
+      </div>
 
       {/* Cards de métricas */}
       <div style={{ display: "flex", gap: 20, marginBottom: 30 }}>
@@ -142,6 +174,33 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Raw API Data */}
+      <div
+        style={{
+          background: "#fff",
+          padding: 20,
+          borderRadius: 12,
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          marginTop: 30
+        }}
+      >
+        <h2>All API Content (Raw Data)</h2>
+        <pre
+          style={{
+            background: "#f5f5f5",
+            padding: 15,
+            borderRadius: 8,
+            overflow: "auto",
+            maxHeight: 400,
+            fontSize: 12,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word"
+          }}
+        >
+          {JSON.stringify(allReports, null, 2)}
+        </pre>
       </div>
     </div>
   );
