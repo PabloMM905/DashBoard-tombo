@@ -17,6 +17,22 @@ import {
 } from "recharts";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import {
+  IconDashboard,
+  IconAlertTriangle,
+  IconMapPin,
+  IconFileText,
+  IconChartBar,
+  IconAlertCircle,
+  IconClock,
+  IconMapPinFilled,
+  IconMessageCircle,
+  IconHourglass,
+  IconProgress,
+  IconCircleCheck,
+  IconUser,
+  IconLock
+} from "@tabler/icons-react";
 
 // Paleta de colores Tombo Security
 const COLORS = {
@@ -327,7 +343,7 @@ export default function Dashboard() {
             marginBottom: 30
           }}>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "0.5px" }}>
-              TOMBO SECURITY
+              TOMBO APP
             </h1>
             <p style={{ margin: "8px 0 0 0", fontSize: 11, opacity: 0.8, textTransform: "uppercase", letterSpacing: "1px" }}>
               Centro de Monitoreo
@@ -335,7 +351,8 @@ export default function Dashboard() {
           </div>
 
           <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, position: "relative" }}>
+              <IconUser size={18} color={COLORS.textSecondary} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
               <input
                 type="text"
                 placeholder="Usuario"
@@ -343,7 +360,7 @@ export default function Dashboard() {
                 onChange={(e) => setUsername(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "12px 16px 12px 40px",
                   borderRadius: 6,
                   border: `1px solid ${COLORS.border}`,
                   fontSize: 14,
@@ -352,7 +369,8 @@ export default function Dashboard() {
                 }}
               />
             </div>
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 20, position: "relative" }}>
+              <IconLock size={18} color={COLORS.textSecondary} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
               <input
                 type="password"
                 placeholder="Contraseña"
@@ -360,7 +378,7 @@ export default function Dashboard() {
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "12px 16px 12px 40px",
                   borderRadius: 6,
                   border: `1px solid ${COLORS.border}`,
                   fontSize: 14,
@@ -419,7 +437,7 @@ export default function Dashboard() {
       >
         <div style={{ padding: "0 20px", marginBottom: 40 }}>
           <h2 style={{ color: "#fff", margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "0.5px" }}>
-            TOMBO SECURITY
+            TOMBO APP
           </h2>
           <p style={{ color: "rgba(255,255,255,0.7)", margin: "4px 0 0 0", fontSize: 11, textTransform: "uppercase", letterSpacing: "1px" }}>
             Centro de Monitoreo
@@ -427,11 +445,11 @@ export default function Dashboard() {
         </div>
         <nav>
           {[
-            { id: "dashboard", label: "Dashboard" },
-            { id: "alertas", label: "Alertas" },
-            { id: "zonas", label: "Zonas de Riesgo" },
-            { id: "reportes", label: "Reportes" },
-            { id: "metricas", label: "Métricas" }
+            { id: "dashboard", label: "Dashboard", icon: IconDashboard },
+            { id: "alertas", label: "Alertas", icon: IconAlertTriangle },
+            { id: "zonas", label: "Zonas de Riesgo", icon: IconMapPin },
+            { id: "reportes", label: "Reportes", icon: IconFileText },
+            { id: "metricas", label: "Métricas", icon: IconChartBar }
           ].map((item) => (
             <button
               key={item.id}
@@ -447,9 +465,13 @@ export default function Dashboard() {
                 cursor: "pointer",
                 fontSize: 14,
                 fontWeight: activeSection === item.id ? 600 : 400,
-                transition: "all 0.2s ease"
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: 10
               }}
             >
+              <item.icon size={18} />
               {item.label}
             </button>
           ))}
@@ -474,8 +496,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.danger}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Incidentes Activos</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{totalReports}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconAlertCircle size={18} color={COLORS.danger} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Incidentes Activos</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalReports}</p>
               </div>
               <div style={{
                 flex: 1,
@@ -485,8 +510,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.warning}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Alertas Hoy</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconAlertTriangle size={18} color={COLORS.warning} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Alertas Hoy</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>
                   {allReports.filter(r => {
                     const today = new Date().toDateString();
                     return new Date(r.created_at).toDateString() === today;
@@ -501,8 +529,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.dashboard}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Zonas Monitoreadas</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{totalPoints}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconMapPinFilled size={18} color={COLORS.dashboard} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Zonas Monitoreadas</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalPoints}</p>
               </div>
               <div style={{
                 flex: 1,
@@ -512,8 +543,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.success}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Respuestas</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{totalComments}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconMessageCircle size={18} color={COLORS.success} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Respuestas</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalComments}</p>
               </div>
             </div>
 
@@ -527,8 +561,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.pending}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pendientes</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{reportsPending}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconHourglass size={18} color={COLORS.pending} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pendientes</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsPending}</p>
               </div>
               <div style={{
                 flex: 1,
@@ -538,8 +575,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.inProgress}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>En Proceso</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{reportsInProgress}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconProgress size={18} color={COLORS.inProgress} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>En Proceso</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsInProgress}</p>
               </div>
               <div style={{
                 flex: 1,
@@ -549,8 +589,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.success}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Resueltos</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{reportsResolved}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconCircleCheck size={18} color={COLORS.success} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Resueltos</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsResolved}</p>
               </div>
               <div style={{
                 flex: 1,
@@ -560,8 +603,11 @@ export default function Dashboard() {
                 borderLeft: `4px solid ${COLORS.metrics}`,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
               }}>
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Tiempo Promedio</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{avgResolutionTime}h</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <IconClock size={18} color={COLORS.metrics} />
+                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Tiempo Promedio</h3>
+                </div>
+                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{avgResolutionTime}h</p>
               </div>
             </div>
 
