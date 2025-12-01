@@ -1,0 +1,12 @@
+# Comandos para levantar el servidor
+
+## 1. Instalar dependencias
+npm install
+
+## 2. Levantar servidor de desarrollo
+npm run dev
+
+## Otros comandos disponibles
+- npm run build    # Crear build de produccion
+- npm run preview  # Previsualizar build de produccion
+- npm run lint     # Ejecutar linter
