@@ -1131,7 +1131,17 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredReports.map((report, index) => {
+                  {filteredReports
+                  .sort((a, b) => {
+                    const getOrder = (r) => {
+                      if (!r.process_start) return 1;     // Pendiente
+                      if (r.process_start && !r.process_end) return 2; // En Proceso
+                      return 3;                           // Resuelto
+                    };
+
+                    return getOrder(a) - getOrder(b);
+                  })
+                  .map((report, index) => {
                     const status = report.process_end ? 'Resuelto' : report.process_start ? 'En Proceso' : 'Pendiente';
                     const statusColor = report.process_end ? COLORS.success : report.process_start ? COLORS.inProgress : COLORS.pending;
                     return (
@@ -1193,7 +1203,7 @@ export default function Dashboard() {
                                   console.error(error);
                                 } else {
                                   alert("Reporte marcado como RESUELTO");
-                                  setReports(prev =>
+                                  setAllReports(prev =>
                                     prev.map(r =>
                                       r.id === report.id ? { ...r, process_end: new Date().toISOString() } : r
                                     )
@@ -1229,7 +1239,7 @@ export default function Dashboard() {
                                   console.error(error);
                                 } else {
                                   alert("Reporte ELIMINADO");
-                                  setReports(prev => prev.filter(r => r.id !== report.id));
+                                  setAllReports(prev => prev.filter(r => r.id !== report.id));
                                 }
                               }}
                               style={{
