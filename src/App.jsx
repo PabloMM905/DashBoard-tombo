@@ -1127,6 +1127,7 @@ export default function Dashboard() {
                     <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Ubicación</th>
                     <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Estado</th>
                     <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Fecha</th>
+                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Accion</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1160,6 +1161,7 @@ export default function Dashboard() {
                             ? report.address.substring(0, 40) + "..."
                             : report.address}
                         </td>
+
                         <td style={{ padding: 14 }}>
                           <span style={{
                             background: statusColor,
@@ -1175,6 +1177,77 @@ export default function Dashboard() {
                         <td style={{ padding: 14, fontSize: 12, color: COLORS.textSecondary }}>
                           {new Date(report.created_at).toLocaleString()}
                         </td>
+
+                          <td style={{ padding: 14, display: "flex", gap: 8 }}>
+
+                            {/* Resolver */}
+                            <button
+                              onClick={async () => {
+                                const { error } = await supabase
+                                  .from("reports")
+                                  .update({ process_end: new Date().toISOString() })
+                                  .eq("id", report.id);
+
+                                if (error) {
+                                  alert("Error al resolver el reporte");
+                                  console.error(error);
+                                } else {
+                                  alert("Reporte marcado como RESUELTO");
+                                  setReports(prev =>
+                                    prev.map(r =>
+                                      r.id === report.id ? { ...r, process_end: new Date().toISOString() } : r
+                                    )
+                                  );
+                                }
+                              }}
+                              style={{
+                                padding: "6px 12px",
+                                background: "#059669",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontWeight: 600
+                              }}
+                            >
+                              Resolver
+                            </button>
+
+                            {/* Eliminar */}
+                            <button
+                              onClick={async () => {
+                                if (!confirm("¿Seguro que deseas ELIMINAR este reporte?")) return;
+
+                                const { error } = await supabase
+                                  .from("reports")
+                                  .delete()
+                                  .eq("id", report.id);
+
+                                if (error) {
+                                  alert("Error al eliminar el reporte");
+                                  console.error(error);
+                                } else {
+                                  alert("Reporte ELIMINADO");
+                                  setReports(prev => prev.filter(r => r.id !== report.id));
+                                }
+                              }}
+                              style={{
+                                padding: "6px 12px",
+                                background: "#DC2626",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontWeight: 600
+                              }}
+                            >
+                              Eliminar
+                            </button>
+
+                          </td>
+
                       </tr>
                     );
                   })}
