@@ -13,7 +13,7 @@ import {
   Legend,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from "recharts";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -31,24 +31,24 @@ import {
   IconProgress,
   IconCircleCheck,
   IconUser,
-  IconLock
+  IconLock,
 } from "@tabler/icons-react";
 
 // Paleta de colores Tombo Security
 const COLORS = {
-  primary: "#1E3A8A",      // Azul Tombo - identidad principal
-  dashboard: "#2563EB",    // Panel principal
-  danger: "#DC2626",       // Alertas, crítico
-  warning: "#F59E0B",      // Riesgo medio
-  success: "#10B981",      // Completado, resuelto
-  metrics: "#8B5CF6",      // Métricas, KPIs
-  pending: "#FBBF24",      // Pendiente
-  inProgress: "#3B82F6",   // En proceso
-  background: "#F3F4F6",   // Fondo general
-  card: "#FFFFFF",         // Tarjetas
-  textPrimary: "#111827",  // Títulos
+  primary: "#1E3A8A", // Azul Tombo - identidad principal
+  dashboard: "#2563EB", // Panel principal
+  danger: "#DC2626", // Alertas, crítico
+  warning: "#F59E0B", // Riesgo medio
+  success: "#10B981", // Completado, resuelto
+  metrics: "#8B5CF6", // Métricas, KPIs
+  pending: "#FBBF24", // Pendiente
+  inProgress: "#3B82F6", // En proceso
+  background: "#F3F4F6", // Fondo general
+  card: "#FFFFFF", // Tarjetas
+  textPrimary: "#111827", // Títulos
   textSecondary: "#6B7280", // Texto secundario
-  border: "#E5E7EB"        // Líneas de separación
+  border: "#E5E7EB", // Líneas de separación
 };
 
 const REPORT_TYPE_COLORS = {
@@ -57,7 +57,7 @@ const REPORT_TYPE_COLORS = {
   theft: "#F59E0B",
   vandalism: "#FBBF24",
   suspicious: "#8B5CF6",
-  other: "#6B7280"
+  other: "#6B7280",
 };
 
 const REPORT_TYPE_LABELS = {
@@ -66,7 +66,7 @@ const REPORT_TYPE_LABELS = {
   theft: "Hurto",
   vandalism: "Vandalismo",
   suspicious: "Actividad Sospechosa",
-  other: "Otro"
+  other: "Otro",
 };
 
 export default function Dashboard() {
@@ -100,20 +100,22 @@ export default function Dashboard() {
 
   // Métricas de estado de procesos
   const reportsInProgress = useMemo(() => {
-    return allReports.filter(r => r.process_start && !r.process_end).length;
+    return allReports.filter((r) => r.process_start && !r.process_end).length;
   }, [allReports]);
 
   const reportsResolved = useMemo(() => {
-    return allReports.filter(r => r.process_end).length;
+    return allReports.filter((r) => r.process_end).length;
   }, [allReports]);
 
   const reportsPending = useMemo(() => {
-    return allReports.filter(r => !r.process_start).length;
+    return allReports.filter((r) => !r.process_start).length;
   }, [allReports]);
 
   // Tiempo promedio de resolución (en horas)
   const avgResolutionTime = useMemo(() => {
-    const resolvedReports = allReports.filter(r => r.process_start && r.process_end);
+    const resolvedReports = allReports.filter(
+      (r) => r.process_start && r.process_end
+    );
     if (resolvedReports.length === 0) return 0;
     const totalHours = resolvedReports.reduce((acc, r) => {
       const start = new Date(r.process_start);
@@ -126,19 +128,25 @@ export default function Dashboard() {
   // Datos para gráfico de estado
   const statusData = useMemo(() => {
     return [
-      { name: 'Pendiente', value: reportsPending, color: COLORS.pending },
-      { name: 'En Proceso', value: reportsInProgress, color: COLORS.inProgress },
-      { name: 'Resuelto', value: reportsResolved, color: COLORS.success }
-    ].filter(d => d.value > 0);
+      { name: "Pendiente", value: reportsPending, color: COLORS.pending },
+      {
+        name: "En Proceso",
+        value: reportsInProgress,
+        color: COLORS.inProgress,
+      },
+      { name: "Resuelto", value: reportsResolved, color: COLORS.success },
+    ].filter((d) => d.value > 0);
   }, [reportsPending, reportsInProgress, reportsResolved]);
 
   // Tiempo de resolución por tipo
   const resolutionByType = useMemo(() => {
     const typeData = {};
-    allReports.forEach(report => {
+    allReports.forEach((report) => {
       if (report.process_start && report.process_end) {
-        const type = report.report_type || 'other';
-        const hours = (new Date(report.process_end) - new Date(report.process_start)) / (1000 * 60 * 60);
+        const type = report.report_type || "other";
+        const hours =
+          (new Date(report.process_end) - new Date(report.process_start)) /
+          (1000 * 60 * 60);
         if (!typeData[type]) {
           typeData[type] = { total: 0, count: 0 };
         }
@@ -148,7 +156,7 @@ export default function Dashboard() {
     });
     return Object.entries(typeData).map(([type, data]) => ({
       type: REPORT_TYPE_LABELS[type] || type,
-      avgHours: (data.total / data.count).toFixed(1)
+      avgHours: (data.total / data.count).toFixed(1),
     }));
   }, [allReports]);
 
@@ -165,7 +173,9 @@ export default function Dashboard() {
       acc[date].count++;
       return acc;
     }, {});
-    return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+    return Object.values(grouped).sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
   }, [allReports]);
 
   // Reportes filtrados para el mapa
@@ -201,20 +211,39 @@ export default function Dashboard() {
   const reportsByMonth = useMemo(() => {
     const grouped = allReports.reduce((acc, report) => {
       const date = new Date(report.created_at);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const monthLabel = date.toLocaleDateString('es', { year: 'numeric', month: 'short' });
-      acc[monthKey] = acc[monthKey] || { month: monthLabel, monthKey, count: 0 };
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
+      const monthLabel = date.toLocaleDateString("es", {
+        year: "numeric",
+        month: "short",
+      });
+      acc[monthKey] = acc[monthKey] || {
+        month: monthLabel,
+        monthKey,
+        count: 0,
+      };
       acc[monthKey].count++;
       return acc;
     }, {});
-    return Object.values(grouped).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+    return Object.values(grouped).sort((a, b) =>
+      a.monthKey.localeCompare(b.monthKey)
+    );
   }, [allReports]);
 
   // Reportes por día de semana
   const reportsByWeekday = useMemo(() => {
-    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const days = [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ];
     const counts = [0, 0, 0, 0, 0, 0, 0];
-    allReports.forEach(report => {
+    allReports.forEach((report) => {
       const day = new Date(report.created_at).getDay();
       counts[day]++;
     });
@@ -224,7 +253,7 @@ export default function Dashboard() {
   // Heatmap de incidencias por día (últimos 90 días)
   const heatmapData = useMemo(() => {
     const grouped = allReports.reduce((acc, report) => {
-      const date = new Date(report.created_at).toLocaleDateString('es');
+      const date = new Date(report.created_at).toLocaleDateString("es");
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {});
@@ -237,19 +266,19 @@ export default function Dashboard() {
   // Reportes por hora del día y tipo
   const reportsByHour = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => ({
-      hour: `${String(i).padStart(2, '0')}:00`,
-      total: 0
+      hour: `${String(i).padStart(2, "0")}:00`,
+      total: 0,
     }));
 
     // Agregar conteo por tipo
     const typeKeys = Object.keys(REPORT_TYPE_LABELS);
-    hours.forEach(h => {
-      typeKeys.forEach(type => {
+    hours.forEach((h) => {
+      typeKeys.forEach((type) => {
         h[type] = 0;
       });
     });
 
-    allReports.forEach(report => {
+    allReports.forEach((report) => {
       const hour = new Date(report.created_at).getHours();
       hours[hour].total++;
       if (report.report_type && hours[hour][report.report_type] !== undefined) {
@@ -309,7 +338,6 @@ export default function Dashboard() {
         .limit(5);
 
       setRecentReports(lastReports);
-
     } catch (e) {
       console.error("Error cargando dashboard:", e);
     }
@@ -319,40 +347,70 @@ export default function Dashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: COLORS.background,
-        fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif"
-      }}>
-        <div style={{
-          background: COLORS.card,
-          padding: 40,
-          borderRadius: 12,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-          width: 360,
-          textAlign: "center"
-        }}>
-          <div style={{
-            background: COLORS.primary,
-            color: "#fff",
-            padding: "20px",
-            borderRadius: 8,
-            marginBottom: 30
-          }}>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "0.5px" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: COLORS.background,
+          fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+        }}
+      >
+        <div
+          style={{
+            background: COLORS.card,
+            padding: 40,
+            borderRadius: 12,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            width: 360,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              background: COLORS.primary,
+              color: "#fff",
+              padding: "20px",
+              borderRadius: 8,
+              marginBottom: 30,
+            }}
+          >
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 20,
+                fontWeight: 700,
+                letterSpacing: "0.5px",
+              }}
+            >
               TOMBO APP
             </h1>
-            <p style={{ margin: "8px 0 0 0", fontSize: 11, opacity: 0.8, textTransform: "uppercase", letterSpacing: "1px" }}>
+            <p
+              style={{
+                margin: "8px 0 0 0",
+                fontSize: 11,
+                opacity: 0.8,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+              }}
+            >
               Centro de Monitoreo
             </p>
           </div>
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: 16, position: "relative" }}>
-              <IconUser size={18} color={COLORS.textSecondary} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+              <IconUser
+                size={18}
+                color={COLORS.textSecondary}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
+              />
               <input
                 type="text"
                 placeholder="Usuario"
@@ -365,12 +423,21 @@ export default function Dashboard() {
                   border: `1px solid ${COLORS.border}`,
                   fontSize: 14,
                   boxSizing: "border-box",
-                  outline: "none"
+                  outline: "none",
                 }}
               />
             </div>
             <div style={{ marginBottom: 20, position: "relative" }}>
-              <IconLock size={18} color={COLORS.textSecondary} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+              <IconLock
+                size={18}
+                color={COLORS.textSecondary}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
+              />
               <input
                 type="password"
                 placeholder="Contraseña"
@@ -383,17 +450,19 @@ export default function Dashboard() {
                   border: `1px solid ${COLORS.border}`,
                   fontSize: 14,
                   boxSizing: "border-box",
-                  outline: "none"
+                  outline: "none",
                 }}
               />
             </div>
 
             {loginError && (
-              <p style={{
-                color: COLORS.danger,
-                fontSize: 13,
-                margin: "0 0 16px 0"
-              }}>
+              <p
+                style={{
+                  color: COLORS.danger,
+                  fontSize: 13,
+                  margin: "0 0 16px 0",
+                }}
+              >
                 {loginError}
               </p>
             )}
@@ -410,7 +479,7 @@ export default function Dashboard() {
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
-                transition: "background 0.2s ease"
+                transition: "background 0.2s ease",
               }}
             >
               Iniciar Sesión
@@ -424,7 +493,13 @@ export default function Dashboard() {
   if (loading) return <p style={{ padding: 30 }}>Cargando dashboard...</p>;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif" }}>
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+      }}
+    >
       {/* Barra lateral */}
       <div
         style={{
@@ -432,14 +507,30 @@ export default function Dashboard() {
           background: COLORS.primary,
           padding: "24px 0",
           flexShrink: 0,
-          boxShadow: "2px 0 8px rgba(0,0,0,0.15)"
+          boxShadow: "2px 0 8px rgba(0,0,0,0.15)",
         }}
       >
         <div style={{ padding: "0 20px", marginBottom: 40 }}>
-          <h2 style={{ color: "#fff", margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "0.5px" }}>
+          <h2
+            style={{
+              color: "#fff",
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 700,
+              letterSpacing: "0.5px",
+            }}
+          >
             TOMBO APP
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.7)", margin: "4px 0 0 0", fontSize: 11, textTransform: "uppercase", letterSpacing: "1px" }}>
+          <p
+            style={{
+              color: "rgba(255,255,255,0.7)",
+              margin: "4px 0 0 0",
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
             Centro de Monitoreo
           </p>
         </div>
@@ -449,7 +540,7 @@ export default function Dashboard() {
             { id: "alertas", label: "Alertas", icon: IconAlertTriangle },
             { id: "zonas", label: "Zonas de Riesgo", icon: IconMapPin },
             { id: "reportes", label: "Reportes", icon: IconFileText },
-            { id: "metricas", label: "Métricas", icon: IconChartBar }
+            { id: "metricas", label: "Métricas", icon: IconChartBar },
           ].map((item) => (
             <button
               key={item.id}
@@ -458,9 +549,16 @@ export default function Dashboard() {
                 width: "100%",
                 padding: "14px 24px",
                 border: "none",
-                background: activeSection === item.id ? "rgba(255,255,255,0.15)" : "transparent",
-                borderLeft: activeSection === item.id ? "3px solid #fff" : "3px solid transparent",
-                color: activeSection === item.id ? "#fff" : "rgba(255,255,255,0.8)",
+                background:
+                  activeSection === item.id
+                    ? "rgba(255,255,255,0.15)"
+                    : "transparent",
+                borderLeft:
+                  activeSection === item.id
+                    ? "3px solid #fff"
+                    : "3px solid transparent",
+                color:
+                  activeSection === item.id ? "#fff" : "rgba(255,255,255,0.8)",
                 textAlign: "left",
                 cursor: "pointer",
                 fontSize: 14,
@@ -468,7 +566,7 @@ export default function Dashboard() {
                 transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
-                gap: 10
+                gap: 10,
               }}
             >
               <item.icon size={18} />
@@ -479,149 +577,398 @@ export default function Dashboard() {
       </div>
 
       {/* Contenido principal */}
-      <div style={{ flex: 1, padding: 30, background: COLORS.background, overflowY: "auto" }}>
+      <div
+        style={{
+          flex: 1,
+          padding: 30,
+          background: COLORS.background,
+          overflowY: "auto",
+        }}
+      >
         {activeSection === "dashboard" && (
           <>
-            <h1 style={{ fontSize: 28, marginBottom: 24, color: COLORS.textPrimary, fontWeight: 600 }}>
+            <h1
+              style={{
+                fontSize: 28,
+                marginBottom: 24,
+                color: COLORS.textPrimary,
+                fontWeight: 600,
+              }}
+            >
               Centro de Monitoreo de Seguridad
             </h1>
 
             {/* Cards de métricas principales */}
             <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.danger}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.danger}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <IconAlertCircle size={18} color={COLORS.danger} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Incidentes Activos</h3>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Incidentes Activos
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalReports}</p>
-              </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.warning}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <IconAlertTriangle size={18} color={COLORS.warning} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Alertas Hoy</h3>
-                </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>
-                  {allReports.filter(r => {
-                    const today = new Date().toDateString();
-                    return new Date(r.created_at).toDateString() === today;
-                  }).length}
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {totalReports}
                 </p>
               </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.dashboard}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <IconMapPinFilled size={18} color={COLORS.dashboard} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Zonas Monitoreadas</h3>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.warning}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <IconAlertTriangle size={18} color={COLORS.warning} />
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Alertas Hoy
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalPoints}</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {
+                    allReports.filter((r) => {
+                      const today = new Date().toDateString();
+                      return new Date(r.created_at).toDateString() === today;
+                    }).length
+                  }
+                </p>
               </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.success}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <IconMessageCircle size={18} color={COLORS.success} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Respuestas</h3>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.dashboard}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <IconMapPinFilled size={18} color={COLORS.dashboard} />
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Zonas Monitoreadas
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{totalComments}</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {totalPoints}
+                </p>
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.success}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <IconMessageCircle size={18} color={COLORS.success} />
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Respuestas
+                  </h3>
+                </div>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {totalComments}
+                </p>
               </div>
             </div>
 
             {/* Cards de estado de procesos */}
             <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.pending}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.pending}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <IconHourglass size={18} color={COLORS.pending} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Pendientes</h3>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Pendientes
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsPending}</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {reportsPending}
+                </p>
               </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.inProgress}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.inProgress}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <IconProgress size={18} color={COLORS.inProgress} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>En Proceso</h3>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    En Proceso
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsInProgress}</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {reportsInProgress}
+                </p>
               </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.success}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.success}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <IconCircleCheck size={18} color={COLORS.success} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Resueltos</h3>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Resueltos
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{reportsResolved}</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {reportsResolved}
+                </p>
               </div>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                borderLeft: `4px solid ${COLORS.metrics}`,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${COLORS.metrics}`,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
                   <IconClock size={18} color={COLORS.metrics} />
-                  <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Tiempo Promedio</h3>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      color: COLORS.textSecondary,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Tiempo Promedio
+                  </h3>
                 </div>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: 0, color: COLORS.textPrimary }}>{avgResolutionTime}h</p>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {avgResolutionTime}h
+                </p>
               </div>
             </div>
 
             {/* Gráficos de Estado y Resolución */}
             <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
               {/* Gráfico de pie - Estado de reportes */}
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Estado de Reportes</h2>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <h2
+                  style={{
+                    marginTop: 0,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  Estado de Reportes
+                </h2>
                 <div style={{ height: 250 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -646,229 +993,444 @@ export default function Dashboard() {
               </div>
 
               {/* Gráfico de barras - Tiempo de resolución por tipo */}
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Tiempo de Resolución por Tipo (horas)</h2>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <h2
+                  style={{
+                    marginTop: 0,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  Tiempo de Resolución por Tipo (horas)
+                </h2>
                 <div style={{ height: 250 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={resolutionByType}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={COLORS.border}
+                      />
                       <XAxis dataKey="type" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 12 }} />
                       <Tooltip />
-                      <Bar dataKey="avgHours" fill={COLORS.metrics} name="Horas promedio" />
+                      <Bar
+                        dataKey="avgHours"
+                        fill={COLORS.metrics}
+                        name="Horas promedio"
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
             </div>
 
-      {/* Mapa de reportes */}
-      <div
-        style={{
-          background: COLORS.card,
-          padding: 20,
-          borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          marginBottom: 24
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Mapa de Reportes</h2>
-
-        {/* Filtros */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-          <div>
-            <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Tipo:</label>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
+            {/* Mapa de reportes */}
+            <div
+              style={{
+                background: COLORS.card,
+                padding: 20,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                marginBottom: 24,
+              }}
             >
-              <option value="all">Todos</option>
-              {reportTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Mapa de Reportes
+              </h2>
 
-          <div>
-            <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Desde:</label>
-            <input
-              type="date"
-              value={filterDateFrom}
-              onChange={(e) => setFilterDateFrom(e.target.value)}
-              style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
-            />
-          </div>
-
-          <div>
-            <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Hasta:</label>
-            <input
-              type="date"
-              value={filterDateTo}
-              onChange={(e) => setFilterDateTo(e.target.value)}
-              style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
-            />
-          </div>
-
-          <button
-            onClick={() => {
-              setFilterType("all");
-              setFilterDateFrom("");
-              setFilterDateTo("");
-            }}
-            style={{
-              padding: "8px 16px",
-              borderRadius: 4,
-              border: "none",
-              background: COLORS.primary,
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: 13,
-              fontWeight: 500
-            }}
-          >
-            Limpiar filtros
-          </button>
-
-          <span style={{ fontSize: 12, color: COLORS.textSecondary }}>
-            Mostrando {filteredReports.length} de {allReports.length} reportes
-          </span>
-        </div>
-
-        {/* Mapa */}
-        <div style={{ height: 400, borderRadius: 8, overflow: "hidden" }}>
-          {allReports.length > 0 && (
-            <MapContainer
-              center={
-                filteredReports.length > 0
-                  ? [filteredReports[0].latitude, filteredReports[0].longitude]
-                  : [-12.0464, -77.0428]
-              }
-              zoom={12}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {filteredReports.map((report) => (
-                <CircleMarker
-                  key={report.id}
-                  center={[report.latitude, report.longitude]}
-                  radius={8}
-                  fillColor={COLORS.danger}
-                  color={COLORS.primary}
-                  weight={2}
-                  opacity={1}
-                  fillOpacity={0.7}
-                >
-                  <Popup>
-                    <div style={{ fontSize: 12 }}>
-                      <strong>Tipo:</strong> {report.report_type}<br />
-                      <strong>Descripción:</strong> {report.description}<br />
-                      <strong>Dirección:</strong> {report.address}<br />
-                      <strong>Fecha:</strong> {new Date(report.created_at).toLocaleString()}
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              ))}
-            </MapContainer>
-          )}
-          {allReports.length === 0 && (
-            <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5" }}>
-              No hay reportes para mostrar en el mapa
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Gráfico */}
-      <div
-        style={{
-          height: 300,
-          background: COLORS.card,
-          padding: 20,
-          borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          marginBottom: 24
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Reportes por tipo</h2>
-        <ResponsiveContainer width="100%" height="85%">
-          <BarChart data={reportsByType}>
-            <XAxis dataKey="type" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Bar dataKey="count" fill={COLORS.dashboard} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Últimos reportes */}
-      <div
-        style={{
-          background: COLORS.card,
-          padding: 20,
-          borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Últimos reportes</h2>
-
-        <table style={{ width: "100%", marginTop: 12, borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ textAlign: "left", borderBottom: `2px solid ${COLORS.border}` }}>
-              <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>ID</th>
-              <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Tipo</th>
-              <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Descripción</th>
-              <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Estado</th>
-              <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentReports.map((r) => {
-              const status = r.process_end ? 'Resuelto' : r.process_start ? 'En Proceso' : 'Pendiente';
-              const statusColor = r.process_end ? COLORS.success : r.process_start ? COLORS.inProgress : COLORS.pending;
-              return (
-                <tr key={r.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textPrimary }}>{r.id}</td>
-                  <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textPrimary }}>{r.report_type}</td>
-                  <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textSecondary }}>{r.description.substring(0, 40)}...</td>
-                  <td style={{ padding: "12px 8px" }}>
-                    <span style={{
-                      background: statusColor,
-                      color: "#fff",
-                      padding: "4px 8px",
+              {/* Filtros */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  marginBottom: 16,
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      marginRight: 8,
+                      color: COLORS.textSecondary,
+                    }}
+                  >
+                    Tipo:
+                  </label>
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    style={{
+                      padding: "8px 12px",
                       borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 500
-                    }}>
-                      {status}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textSecondary }}>{new Date(r.created_at).toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                      border: `1px solid ${COLORS.border}`,
+                      fontSize: 13,
+                    }}
+                  >
+                    <option value="all">Todos</option>
+                    {reportTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
+                <div>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      marginRight: 8,
+                      color: COLORS.textSecondary,
+                    }}
+                  >
+                    Desde:
+                  </label>
+                  <input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 4,
+                      border: `1px solid ${COLORS.border}`,
+                      fontSize: 13,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: 12,
+                      marginRight: 8,
+                      color: COLORS.textSecondary,
+                    }}
+                  >
+                    Hasta:
+                  </label>
+                  <input
+                    type="date"
+                    value={filterDateTo}
+                    onChange={(e) => setFilterDateTo(e.target.value)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 4,
+                      border: `1px solid ${COLORS.border}`,
+                      fontSize: 13,
+                    }}
+                  />
+                </div>
+
+                <button
+                  onClick={() => {
+                    setFilterType("all");
+                    setFilterDateFrom("");
+                    setFilterDateTo("");
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: 4,
+                    border: "none",
+                    background: COLORS.primary,
+                    color: "#fff",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                >
+                  Limpiar filtros
+                </button>
+
+                <span style={{ fontSize: 12, color: COLORS.textSecondary }}>
+                  Mostrando {filteredReports.length} de {allReports.length}{" "}
+                  reportes
+                </span>
+              </div>
+
+              {/* Mapa */}
+              <div style={{ height: 400, borderRadius: 8, overflow: "hidden" }}>
+                {allReports.length > 0 && (
+                  <MapContainer
+                    center={
+                      filteredReports.length > 0
+                        ? [
+                            filteredReports[0].latitude,
+                            filteredReports[0].longitude,
+                          ]
+                        : [-12.0464, -77.0428]
+                    }
+                    zoom={12}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {filteredReports.map((report) => (
+                      <CircleMarker
+                        key={report.id}
+                        center={[report.latitude, report.longitude]}
+                        radius={8}
+                        fillColor={COLORS.danger}
+                        color={COLORS.primary}
+                        weight={2}
+                        opacity={1}
+                        fillOpacity={0.7}
+                      >
+                        <Popup>
+                          <div style={{ fontSize: 12 }}>
+                            <strong>Tipo:</strong> {report.report_type}
+                            <br />
+                            <strong>Descripción:</strong> {report.description}
+                            <br />
+                            <strong>Dirección:</strong> {report.address}
+                            <br />
+                            <strong>Fecha:</strong>{" "}
+                            {new Date(report.created_at).toLocaleString()}
+                          </div>
+                        </Popup>
+                      </CircleMarker>
+                    ))}
+                  </MapContainer>
+                )}
+                {allReports.length === 0 && (
+                  <div
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#f5f5f5",
+                    }}
+                  >
+                    No hay reportes para mostrar en el mapa
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Gráfico */}
+            <div
+              style={{
+                height: 300,
+                background: COLORS.card,
+                padding: 20,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                marginBottom: 24,
+              }}
+            >
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Reportes por tipo
+              </h2>
+              <ResponsiveContainer width="100%" height="85%">
+                <BarChart data={reportsByType}>
+                  <XAxis dataKey="type" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill={COLORS.dashboard} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Últimos reportes */}
+            <div
+              style={{
+                background: COLORS.card,
+                padding: 20,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              }}
+            >
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Últimos reportes
+              </h2>
+
+              <table
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      textAlign: "left",
+                      borderBottom: `2px solid ${COLORS.border}`,
+                    }}
+                  >
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      ID
+                    </th>
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Tipo
+                    </th>
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Descripción
+                    </th>
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Estado
+                    </th>
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Fecha
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentReports.map((r) => {
+                    const status = r.process_end
+                      ? "Resuelto"
+                      : r.process_start
+                      ? "En Proceso"
+                      : "Pendiente";
+                    const statusColor = r.process_end
+                      ? COLORS.success
+                      : r.process_start
+                      ? COLORS.inProgress
+                      : COLORS.pending;
+                    return (
+                      <tr
+                        key={r.id}
+                        style={{ borderBottom: `1px solid ${COLORS.border}` }}
+                      >
+                        <td
+                          style={{
+                            padding: "12px 8px",
+                            fontSize: 13,
+                            color: COLORS.textPrimary,
+                          }}
+                        >
+                          {r.id}
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 8px",
+                            fontSize: 13,
+                            color: COLORS.textPrimary,
+                          }}
+                        >
+                          {r.report_type}
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 8px",
+                            fontSize: 13,
+                            color: COLORS.textSecondary,
+                          }}
+                        >
+                          {r.description.substring(0, 40)}...
+                        </td>
+                        <td style={{ padding: "12px 8px" }}>
+                          <span
+                            style={{
+                              background: statusColor,
+                              color: "#fff",
+                              padding: "4px 8px",
+                              borderRadius: 4,
+                              fontSize: 11,
+                              fontWeight: 500,
+                            }}
+                          >
+                            {status}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px 8px",
+                            fontSize: 13,
+                            color: COLORS.textSecondary,
+                          }}
+                        >
+                          {new Date(r.created_at).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 
         {/* SECCIÓN ALERTAS */}
         {activeSection === "alertas" && (
           <>
-            <h1 style={{ fontSize: 28, marginBottom: 24, color: COLORS.textPrimary, fontWeight: 600 }}>
+            <h1
+              style={{
+                fontSize: 28,
+                marginBottom: 24,
+                color: COLORS.textPrimary,
+                fontWeight: 600,
+              }}
+            >
               Centro de Alertas
             </h1>
 
@@ -877,7 +1439,10 @@ export default function Dashboard() {
               {allReports
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                 .map((report) => {
-                  const hoursAgo = Math.floor((new Date() - new Date(report.created_at)) / (1000 * 60 * 60));
+                  const hoursAgo = Math.floor(
+                    (new Date() - new Date(report.created_at)) /
+                      (1000 * 60 * 60)
+                  );
                   const isRecent = hoursAgo < 24;
                   return (
                     <div
@@ -887,35 +1452,83 @@ export default function Dashboard() {
                         padding: 20,
                         borderRadius: 8,
                         boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                        borderLeft: `4px solid ${isRecent ? COLORS.danger : COLORS.warning}`
+                        borderLeft: `4px solid ${
+                          isRecent ? COLORS.danger : COLORS.warning
+                        }`,
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                        }}
+                      >
                         <div>
-                          <span style={{
-                            background: isRecent ? "#FEE2E2" : "#FEF3C7",
-                            color: isRecent ? COLORS.danger : COLORS.warning,
-                            padding: "4px 8px",
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px"
-                          }}>
+                          <span
+                            style={{
+                              background: isRecent ? "#FEE2E2" : "#FEF3C7",
+                              color: isRecent ? COLORS.danger : COLORS.warning,
+                              padding: "4px 8px",
+                              borderRadius: 4,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.5px",
+                            }}
+                          >
                             {isRecent ? "CRÍTICO" : "PENDIENTE"}
                           </span>
-                          <h3 style={{ margin: "10px 0 5px 0", fontSize: 15, fontWeight: 600, color: COLORS.textPrimary }}>
-                            {REPORT_TYPE_LABELS[report.report_type] || report.report_type}
+                          <h3
+                            style={{
+                              margin: "10px 0 5px 0",
+                              fontSize: 15,
+                              fontWeight: 600,
+                              color: COLORS.textPrimary,
+                            }}
+                          >
+                            {REPORT_TYPE_LABELS[report.report_type] ||
+                              report.report_type}
                           </h3>
-                          <p style={{ margin: 0, color: COLORS.textSecondary, fontSize: 13 }}>{report.description}</p>
-                          <p style={{ margin: "10px 0 0 0", fontSize: 12, color: COLORS.textSecondary }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: COLORS.textSecondary,
+                              fontSize: 13,
+                            }}
+                          >
+                            {report.description}
+                          </p>
+                          <p
+                            style={{
+                              margin: "10px 0 0 0",
+                              fontSize: 12,
+                              color: COLORS.textSecondary,
+                            }}
+                          >
                             {report.address}
                           </p>
                         </div>
-                        <div style={{ textAlign: "right", fontSize: 11, color: COLORS.textSecondary }}>
-                          <p style={{ margin: 0 }}>{new Date(report.created_at).toLocaleDateString()}</p>
-                          <p style={{ margin: "4px 0 0 0" }}>{new Date(report.created_at).toLocaleTimeString()}</p>
-                          <p style={{ margin: "4px 0 0 0", fontWeight: 600, color: COLORS.textPrimary }}>
+                        <div
+                          style={{
+                            textAlign: "right",
+                            fontSize: 11,
+                            color: COLORS.textSecondary,
+                          }}
+                        >
+                          <p style={{ margin: 0 }}>
+                            {new Date(report.created_at).toLocaleDateString()}
+                          </p>
+                          <p style={{ margin: "4px 0 0 0" }}>
+                            {new Date(report.created_at).toLocaleTimeString()}
+                          </p>
+                          <p
+                            style={{
+                              margin: "4px 0 0 0",
+                              fontWeight: 600,
+                              color: COLORS.textPrimary,
+                            }}
+                          >
                             hace {hoursAgo < 1 ? "< 1" : hoursAgo}h
                           </p>
                         </div>
@@ -930,18 +1543,27 @@ export default function Dashboard() {
         {/* SECCIÓN ZONAS DE RIESGO */}
         {activeSection === "zonas" && (
           <>
-            <h1 style={{ fontSize: 28, marginBottom: 24, color: COLORS.textPrimary, fontWeight: 600 }}>
+            <h1
+              style={{
+                fontSize: 28,
+                marginBottom: 24,
+                color: COLORS.textPrimary,
+                fontWeight: 600,
+              }}
+            >
               Zonas de Riesgo
             </h1>
 
             {/* Mapa grande */}
-            <div style={{
-              background: COLORS.card,
-              padding: 20,
-              borderRadius: 8,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              marginBottom: 24
-            }}>
+            <div
+              style={{
+                background: COLORS.card,
+                padding: 20,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                marginBottom: 24,
+              }}
+            >
               <div style={{ height: 500, borderRadius: 8, overflow: "hidden" }}>
                 {allReports.length > 0 && (
                   <MapContainer
@@ -950,7 +1572,7 @@ export default function Dashboard() {
                     style={{ height: "100%", width: "100%" }}
                   >
                     <TileLayer
-                      attribution='&copy; OpenStreetMap contributors'
+                      attribution="&copy; OpenStreetMap contributors"
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     {allReports.map((report) => (
@@ -958,7 +1580,9 @@ export default function Dashboard() {
                         key={report.id}
                         center={[report.latitude, report.longitude]}
                         radius={12}
-                        fillColor={REPORT_TYPE_COLORS[report.report_type] || "#6b7280"}
+                        fillColor={
+                          REPORT_TYPE_COLORS[report.report_type] || "#6b7280"
+                        }
                         color="#fff"
                         weight={2}
                         opacity={1}
@@ -966,12 +1590,21 @@ export default function Dashboard() {
                       >
                         <Popup>
                           <div style={{ fontSize: 12 }}>
-                            <strong style={{ color: REPORT_TYPE_COLORS[report.report_type] }}>
-                              {REPORT_TYPE_LABELS[report.report_type] || report.report_type}
-                            </strong><br />
-                            <strong>Descripción:</strong> {report.description}<br />
-                            <strong>Dirección:</strong> {report.address}<br />
-                            <strong>Fecha:</strong> {new Date(report.created_at).toLocaleString()}
+                            <strong
+                              style={{
+                                color: REPORT_TYPE_COLORS[report.report_type],
+                              }}
+                            >
+                              {REPORT_TYPE_LABELS[report.report_type] ||
+                                report.report_type}
+                            </strong>
+                            <br />
+                            <strong>Descripción:</strong> {report.description}
+                            <br />
+                            <strong>Dirección:</strong> {report.address}
+                            <br />
+                            <strong>Fecha:</strong>{" "}
+                            {new Date(report.created_at).toLocaleString()}
                           </div>
                         </Popup>
                       </CircleMarker>
@@ -983,34 +1616,68 @@ export default function Dashboard() {
 
             {/* Leyenda y estadísticas por zona */}
             <div style={{ display: "flex", gap: 16 }}>
-              <div style={{
-                flex: 1,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <h3 style={{ marginTop: 0, fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>Leyenda de Tipos</h3>
+              <div
+                style={{
+                  flex: 1,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <h3
+                  style={{
+                    marginTop: 0,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  Leyenda de Tipos
+                </h3>
                 {Object.entries(REPORT_TYPE_LABELS).map(([key, label]) => (
-                  <div key={key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <div style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      background: REPORT_TYPE_COLORS[key]
-                    }}></div>
-                    <span style={{ fontSize: 13, color: COLORS.textSecondary }}>{label}</span>
+                  <div
+                    key={key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        background: REPORT_TYPE_COLORS[key],
+                      }}
+                    ></div>
+                    <span style={{ fontSize: 13, color: COLORS.textSecondary }}>
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
-              <div style={{
-                flex: 2,
-                background: COLORS.card,
-                padding: 20,
-                borderRadius: 8,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-              }}>
-                <h3 style={{ marginTop: 0, fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>Distribución por Tipo</h3>
+              <div
+                style={{
+                  flex: 2,
+                  background: COLORS.card,
+                  padding: 20,
+                  borderRadius: 8,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <h3
+                  style={{
+                    marginTop: 0,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  Distribución por Tipo
+                </h3>
                 <div style={{ height: 200 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -1024,7 +1691,10 @@ export default function Dashboard() {
                         label={({ type, count }) => `${type}: ${count}`}
                       >
                         {reportsByType.map((entry, index) => (
-                          <Cell key={index} fill={REPORT_TYPE_COLORS[entry.type] || "#6b7280"} />
+                          <Cell
+                            key={index}
+                            fill={REPORT_TYPE_COLORS[entry.type] || "#6b7280"}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -1039,28 +1709,50 @@ export default function Dashboard() {
         {/* SECCIÓN REPORTES */}
         {activeSection === "reportes" && (
           <>
-            <h1 style={{ fontSize: 28, marginBottom: 24, color: COLORS.textPrimary, fontWeight: 600 }}>
+            <h1
+              style={{
+                fontSize: 28,
+                marginBottom: 24,
+                color: COLORS.textPrimary,
+                fontWeight: 600,
+              }}
+            >
               Historial de Reportes
             </h1>
 
             {/* Filtros */}
-            <div style={{
-              background: COLORS.card,
-              padding: 16,
-              borderRadius: 8,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              marginBottom: 16,
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              flexWrap: "wrap"
-            }}>
+            <div
+              style={{
+                background: COLORS.card,
+                padding: 16,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                marginBottom: 16,
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <div>
-                <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Tipo:</label>
+                <label
+                  style={{
+                    fontSize: 12,
+                    marginRight: 8,
+                    color: COLORS.textSecondary,
+                  }}
+                >
+                  Tipo:
+                </label>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: 13,
+                  }}
                 >
                   <option value="all">Todos</option>
                   {reportTypes.map((type) => (
@@ -1071,21 +1763,47 @@ export default function Dashboard() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Desde:</label>
+                <label
+                  style={{
+                    fontSize: 12,
+                    marginRight: 8,
+                    color: COLORS.textSecondary,
+                  }}
+                >
+                  Desde:
+                </label>
                 <input
                   type="date"
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
-                  style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: 13,
+                  }}
                 />
               </div>
               <div>
-                <label style={{ fontSize: 12, marginRight: 8, color: COLORS.textSecondary }}>Hasta:</label>
+                <label
+                  style={{
+                    fontSize: 12,
+                    marginRight: 8,
+                    color: COLORS.textSecondary,
+                  }}
+                >
+                  Hasta:
+                </label>
                 <input
                   type="date"
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
-                  style={{ padding: "8px 12px", borderRadius: 4, border: `1px solid ${COLORS.border}`, fontSize: 13 }}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: 13,
+                  }}
                 />
               </div>
               <button
@@ -1102,132 +1820,300 @@ export default function Dashboard() {
                   color: "#fff",
                   cursor: "pointer",
                   fontSize: 13,
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 Limpiar
               </button>
-              <span style={{ fontSize: 12, color: COLORS.textSecondary, marginLeft: "auto" }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: COLORS.textSecondary,
+                  marginLeft: "auto",
+                }}
+              >
                 {filteredReports.length} de {allReports.length} reportes
               </span>
             </div>
 
             {/* Tabla de reportes */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: 8,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              overflow: "hidden"
-            }}>
+            <div
+              style={{
+                background: COLORS.card,
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                overflow: "hidden",
+              }}
+            >
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: COLORS.primary, color: "#fff" }}>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Tipo</th>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Descripción</th>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Ubicación</th>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Estado</th>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Fecha</th>
-                    <th style={{ padding: 14, textAlign: "left", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>Accion</th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Tipo
+                    </th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Descripción
+                    </th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Ubicación
+                    </th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Estado
+                    </th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Fecha
+                    </th>
+                    <th
+                      style={{
+                        padding: 14,
+                        textAlign: "left",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Accion
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredReports
-                  .sort((a, b) => {
-                    const getOrder = (r) => {
-                      if (!r.process_start) return 1;     // Pendiente
-                      if (r.process_start && !r.process_end) return 2; // En Proceso
-                      return 3;                           // Resuelto
-                    };
+                    .sort((a, b) => {
+                      const getOrder = (r) => {
+                        if (!r.process_start) return 1; // Pendiente
+                        if (r.process_start && !r.process_end) return 2; // En Proceso
+                        return 3; // Resuelto
+                      };
 
-                    return getOrder(a) - getOrder(b);
-                  })
-                  .map((report, index) => {
-                    const status = report.process_end ? 'Resuelto' : report.process_start ? 'En Proceso' : 'Pendiente';
-                    const statusColor = report.process_end ? COLORS.success : report.process_start ? COLORS.inProgress : COLORS.pending;
-                    return (
-                      <tr key={report.id} style={{
-                        background: index % 2 === 0 ? COLORS.card : COLORS.background,
-                        borderBottom: `1px solid ${COLORS.border}`
-                      }}>
-                        <td style={{ padding: 14 }}>
-                          <span style={{
-                            background: REPORT_TYPE_COLORS[report.report_type] || "#6b7280",
-                            color: "#fff",
-                            padding: "4px 8px",
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 500
-                          }}>
-                            {REPORT_TYPE_LABELS[report.report_type] || report.report_type}
-                          </span>
-                        </td>
-                        <td style={{ padding: 14, maxWidth: 300, fontSize: 13, color: COLORS.textPrimary }}>
-                          {report.description.length > 50
-                            ? report.description.substring(0, 50) + "..."
-                            : report.description}
-                        </td>
-                        <td style={{ padding: 14, fontSize: 12, color: COLORS.textSecondary }}>
-                          {report.address.length > 40
-                            ? report.address.substring(0, 40) + "..."
-                            : report.address}
-                        </td>
-
-                        <td style={{ padding: 14 }}>
-                          <span style={{
-                            background: statusColor,
-                            color: "#fff",
-                            padding: "4px 8px",
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 500
-                          }}>
-                            {status}
-                          </span>
-                        </td>
-                        <td style={{ padding: 14, fontSize: 12, color: COLORS.textSecondary }}>
-                          {new Date(report.created_at).toLocaleString()}
-                        </td>
-
-                          <td style={{ padding: 14, display: "flex", gap: 8 }}>
-
-                            {/* Resolver */}
-                            <button
-                              onClick={async () => {
-                                const { error } = await supabase
-                                  .from("reports")
-                                  .update({ process_end: new Date().toISOString() })
-                                  .eq("id", report.id);
-
-                                if (error) {
-                                  alert("Error al resolver el reporte");
-                                  console.error(error);
-                                } else {
-                                  alert("Reporte marcado como RESUELTO");
-                                  setAllReports(prev =>
-                                    prev.map(r =>
-                                      r.id === report.id ? { ...r, process_end: new Date().toISOString() } : r
-                                    )
-                                  );
-                                }
-                              }}
+                      return getOrder(a) - getOrder(b);
+                    })
+                    .map((report, index) => {
+                      console.log("report!!!", report);
+                      const status = report.process_end
+                        ? "Resuelto"
+                        : report.process_start
+                        ? "En Proceso"
+                        : "Pendiente";
+                      const statusColor = report.process_end
+                        ? COLORS.success
+                        : report.process_start
+                        ? COLORS.inProgress
+                        : COLORS.pending;
+                      return (
+                        <tr
+                          key={report.id}
+                          style={{
+                            background:
+                              index % 2 === 0 ? COLORS.card : COLORS.background,
+                            borderBottom: `1px solid ${COLORS.border}`,
+                          }}
+                        >
+                          <td style={{ padding: 14 }}>
+                            <span
                               style={{
-                                padding: "6px 12px",
-                                background: "#059669",
-                                color: "white",
-                                border: "none",
+                                background:
+                                  REPORT_TYPE_COLORS[report.report_type] ||
+                                  "#6b7280",
+                                color: "#fff",
+                                padding: "4px 8px",
                                 borderRadius: 4,
-                                cursor: "pointer",
-                                fontSize: 12,
-                                fontWeight: 600
+                                fontSize: 11,
+                                fontWeight: 500,
                               }}
                             >
-                              Resolver
-                            </button>
+                              {REPORT_TYPE_LABELS[report.report_type] ||
+                                report.report_type}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              padding: 14,
+                              maxWidth: 300,
+                              fontSize: 13,
+                              color: COLORS.textPrimary,
+                            }}
+                          >
+                            {report.description.length > 50
+                              ? report.description.substring(0, 50) + "..."
+                              : report.description}
+                          </td>
+                          <td
+                            style={{
+                              padding: 14,
+                              fontSize: 12,
+                              color: COLORS.textSecondary,
+                            }}
+                          >
+                            {report.address.length > 40
+                              ? report.address.substring(0, 40) + "..."
+                              : report.address}
+                          </td>
+
+                          <td style={{ padding: 14 }}>
+                            <span
+                              style={{
+                                background: statusColor,
+                                color: "#fff",
+                                padding: "4px 8px",
+                                borderRadius: 4,
+                                fontSize: 11,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {status}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              padding: 14,
+                              fontSize: 12,
+                              color: COLORS.textSecondary,
+                            }}
+                          >
+                            {new Date(report.created_at).toLocaleString()}
+                          </td>
+
+                          <td style={{ padding: 14, display: "flex", gap: 8 }}>
+                            {/* Resolver */}
+
+                            {!report.process_end &&
+                              (report.process_start ? (
+                                <button
+                                  onClick={async () => {
+                                    const { error } = await supabase
+                                      .from("reports")
+                                      .update({
+                                        process_end: new Date().toISOString(),
+                                      })
+                                      .eq("id", report.id);
+
+                                    if (error) {
+                                      alert("Error al resolver el reporte");
+                                      console.error(error);
+                                    } else {
+                                      alert("Reporte marcado como RESUELTO");
+                                      setAllReports((prev) =>
+                                        prev.map((r) =>
+                                          r.id === report.id
+                                            ? {
+                                                ...r,
+                                                process_end:
+                                                  new Date().toISOString(),
+                                              }
+                                            : r
+                                        )
+                                      );
+                                    }
+                                  }}
+                                  style={{
+                                    padding: "6px 12px",
+                                    background: "#059669",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  Resolver
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={async () => {
+                                    const { error } = await supabase
+                                      .from("reports")
+                                      .update({
+                                        process_start: new Date().toISOString(),
+                                      })
+                                      .eq("id", report.id);
+
+                                    if (error) {
+                                      alert(
+                                        "Error al iniciar el proceso del reporte"
+                                      );
+                                      console.error(error);
+                                    } else {
+                                      alert(
+                                        "Reporte marcado como INICIADO PROCESO"
+                                      );
+                                      setAllReports((prev) =>
+                                        prev.map((r) =>
+                                          r.id === report.id
+                                            ? {
+                                                ...r,
+                                                process_start:
+                                                  new Date().toISOString(),
+                                              }
+                                            : r
+                                        )
+                                      );
+                                    }
+                                  }}
+                                  style={{
+                                    padding: "6px 12px",
+                                    background: "#3B82F6",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: 4,
+                                    cursor: "pointer",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  Iniciar proceso
+                                </button>
+                              ))}
 
                             {/* Eliminar */}
                             <button
                               onClick={async () => {
-                                if (!confirm("¿Seguro que deseas ELIMINAR este reporte?")) return;
+                                if (
+                                  !confirm(
+                                    "¿Seguro que deseas ELIMINAR este reporte?"
+                                  )
+                                )
+                                  return;
 
                                 const { error } = await supabase
                                   .from("reports")
@@ -1239,7 +2125,9 @@ export default function Dashboard() {
                                   console.error(error);
                                 } else {
                                   alert("Reporte ELIMINADO");
-                                  setAllReports(prev => prev.filter(r => r.id !== report.id));
+                                  setAllReports((prev) =>
+                                    prev.filter((r) => r.id !== report.id)
+                                  );
                                 }
                               }}
                               style={{
@@ -1250,17 +2138,15 @@ export default function Dashboard() {
                                 borderRadius: 4,
                                 cursor: "pointer",
                                 fontSize: 12,
-                                fontWeight: 600
+                                fontWeight: 600,
                               }}
                             >
                               Eliminar
                             </button>
-
                           </td>
-
-                      </tr>
-                    );
-                  })}
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -1269,7 +2155,16 @@ export default function Dashboard() {
 
         {activeSection === "metricas" && (
           <>
-            <h1 style={{ fontSize: 28, marginBottom: 24, color: COLORS.textPrimary, fontWeight: 600 }}>Métricas y Tendencias</h1>
+            <h1
+              style={{
+                fontSize: 28,
+                marginBottom: 24,
+                color: COLORS.textPrimary,
+                fontWeight: 600,
+              }}
+            >
+              Métricas y Tendencias
+            </h1>
 
             {/* Resumen de métricas */}
             <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
@@ -1280,11 +2175,30 @@ export default function Dashboard() {
                   padding: 20,
                   borderRadius: 8,
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  borderLeft: `4px solid ${COLORS.metrics}`
+                  borderLeft: `4px solid ${COLORS.metrics}`,
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Total días con reportes</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>{reportsByDate.length}</p>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 12,
+                    color: COLORS.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Total días con reportes
+                </h3>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: "8px 0 0 0",
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {reportsByDate.length}
+                </p>
               </div>
               <div
                 style={{
@@ -1293,11 +2207,28 @@ export default function Dashboard() {
                   padding: 20,
                   borderRadius: 8,
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  borderLeft: `4px solid ${COLORS.inProgress}`
+                  borderLeft: `4px solid ${COLORS.inProgress}`,
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Promedio por día</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 12,
+                    color: COLORS.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Promedio por día
+                </h3>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: "8px 0 0 0",
+                    color: COLORS.textPrimary,
+                  }}
+                >
                   {reportsByDate.length > 0
                     ? (totalReports / reportsByDate.length).toFixed(1)
                     : 0}
@@ -1310,11 +2241,28 @@ export default function Dashboard() {
                   padding: 20,
                   borderRadius: 8,
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  borderLeft: `4px solid ${COLORS.danger}`
+                  borderLeft: `4px solid ${COLORS.danger}`,
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase", letterSpacing: "0.5px" }}>Máximo en un día</h3>
-                <p style={{ fontSize: 32, fontWeight: 700, margin: "8px 0 0 0", color: COLORS.textPrimary }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: 12,
+                    color: COLORS.textSecondary,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Máximo en un día
+                </h3>
+                <p
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 700,
+                    margin: "8px 0 0 0",
+                    color: COLORS.textPrimary,
+                  }}
+                >
                   {reportsByDate.length > 0
                     ? Math.max(...reportsByDate.map((d) => d.count))
                     : 0}
@@ -1329,14 +2277,26 @@ export default function Dashboard() {
                 padding: 20,
                 borderRadius: 8,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                marginBottom: 24
+                marginBottom: 24,
               }}
             >
-              <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Incidencias por Mes</h2>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Incidencias por Mes
+              </h2>
               <div style={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={reportsByMonth}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={COLORS.border}
+                    />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
@@ -1362,22 +2322,45 @@ export default function Dashboard() {
                 padding: 20,
                 borderRadius: 8,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                marginBottom: 24
+                marginBottom: 24,
               }}
             >
-              <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Incidencias por Día de Semana</h2>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Incidencias por Día de Semana
+              </h2>
               <div style={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={reportsByWeekday}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={COLORS.border}
+                    />
                     <XAxis dataKey="day" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
-                    <Bar dataKey="count" name="Incidencias" fill={COLORS.dashboard}>
+                    <Bar
+                      dataKey="count"
+                      name="Incidencias"
+                      fill={COLORS.dashboard}
+                    >
                       {reportsByWeekday.map((entry, index) => {
-                        const maxCount = Math.max(...reportsByWeekday.map(d => d.count));
+                        const maxCount = Math.max(
+                          ...reportsByWeekday.map((d) => d.count)
+                        );
                         const isMax = entry.count === maxCount && maxCount > 0;
-                        return <Cell key={index} fill={isMax ? COLORS.danger : COLORS.dashboard} />;
+                        return (
+                          <Cell
+                            key={index}
+                            fill={isMax ? COLORS.danger : COLORS.dashboard}
+                          />
+                        );
                       })}
                     </Bar>
                   </BarChart>
@@ -1392,24 +2375,36 @@ export default function Dashboard() {
                 padding: 20,
                 borderRadius: 8,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                marginBottom: 24
+                marginBottom: 24,
               }}
             >
-              <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Heatmap de Incidencias por Día</h2>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(40px, 1fr))",
-                gap: 4,
-                marginTop: 16,
-                maxHeight: 300,
-                overflowY: "auto"
-              }}>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Heatmap de Incidencias por Día
+              </h2>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(40px, 1fr))",
+                  gap: 4,
+                  marginTop: 16,
+                  maxHeight: 300,
+                  overflowY: "auto",
+                }}
+              >
                 {heatmapData.map((item) => {
-                  const maxCount = Math.max(...heatmapData.map(d => d.count));
+                  const maxCount = Math.max(...heatmapData.map((d) => d.count));
                   const intensity = maxCount > 0 ? item.count / maxCount : 0;
-                  const bgColor = intensity === 0
-                    ? COLORS.background
-                    : `rgba(37, 99, 235, ${0.2 + intensity * 0.8})`;
+                  const bgColor =
+                    intensity === 0
+                      ? COLORS.background
+                      : `rgba(37, 99, 235, ${0.2 + intensity * 0.8})`;
                   return (
                     <div
                       key={item.date}
@@ -1424,7 +2419,7 @@ export default function Dashboard() {
                         color: intensity > 0.5 ? "#fff" : COLORS.textPrimary,
                         fontWeight: 600,
                         cursor: "pointer",
-                        position: "relative"
+                        position: "relative",
                       }}
                       title={`${item.date}: ${item.count} incidencias`}
                     >
@@ -1433,7 +2428,16 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 11, color: COLORS.textSecondary }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 12,
+                  fontSize: 11,
+                  color: COLORS.textSecondary,
+                }}
+              >
                 <span>Menor</span>
                 <div style={{ display: "flex", gap: 2 }}>
                   {[0.2, 0.4, 0.6, 0.8, 1].map((i) => (
@@ -1443,7 +2447,7 @@ export default function Dashboard() {
                         width: 16,
                         height: 16,
                         background: `rgba(37, 99, 235, ${i})`,
-                        borderRadius: 2
+                        borderRadius: 2,
                       }}
                     />
                   ))}
@@ -1459,15 +2463,31 @@ export default function Dashboard() {
                 padding: 20,
                 borderRadius: 8,
                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                marginBottom: 24
+                marginBottom: 24,
               }}
             >
-              <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Incidencias por Hora del Día y Tipo</h2>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Incidencias por Hora del Día y Tipo
+              </h2>
               <div style={{ height: 400 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={reportsByHour}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
-                    <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={1} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={COLORS.border}
+                    />
+                    <XAxis
+                      dataKey="hour"
+                      tick={{ fontSize: 10 }}
+                      interval={1}
+                    />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
                     <Legend />
@@ -1491,22 +2511,79 @@ export default function Dashboard() {
                 background: COLORS.card,
                 padding: 20,
                 borderRadius: 8,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
               }}
             >
-              <h2 style={{ marginTop: 0, fontSize: 16, fontWeight: 600, color: COLORS.textPrimary }}>Detalle por Fecha</h2>
-              <table style={{ width: "100%", marginTop: 12, borderCollapse: "collapse" }}>
+              <h2
+                style={{
+                  marginTop: 0,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Detalle por Fecha
+              </h2>
+              <table
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  borderCollapse: "collapse",
+                }}
+              >
                 <thead>
-                  <tr style={{ textAlign: "left", borderBottom: `2px solid ${COLORS.border}` }}>
-                    <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Fecha</th>
-                    <th style={{ padding: "12px 8px", fontSize: 12, color: COLORS.textSecondary, textTransform: "uppercase" }}>Cantidad de Reportes</th>
+                  <tr
+                    style={{
+                      textAlign: "left",
+                      borderBottom: `2px solid ${COLORS.border}`,
+                    }}
+                  >
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Fecha
+                    </th>
+                    <th
+                      style={{
+                        padding: "12px 8px",
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Cantidad de Reportes
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {reportsByDate.map((item) => (
-                    <tr key={item.date} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                      <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textPrimary }}>{item.date}</td>
-                      <td style={{ padding: "12px 8px", fontSize: 13, color: COLORS.textPrimary }}>{item.count}</td>
+                    <tr
+                      key={item.date}
+                      style={{ borderBottom: `1px solid ${COLORS.border}` }}
+                    >
+                      <td
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: 13,
+                          color: COLORS.textPrimary,
+                        }}
+                      >
+                        {item.date}
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 8px",
+                          fontSize: 13,
+                          color: COLORS.textPrimary,
+                        }}
+                      >
+                        {item.count}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1527,7 +2604,7 @@ function MetricCard({ title, value }) {
         background: "#fff",
         padding: 20,
         borderRadius: 12,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
       }}
     >
       <h3>{title}</h3>
